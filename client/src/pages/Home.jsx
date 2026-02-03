@@ -3,6 +3,7 @@ import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { context } from "./Context";
 import { useEffect } from "react";
+import { FRONTEND } from "../config/env";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ const Home = () => {
   const { loggedin, email, serverUrl } = useContext(context);
 
   const DAUTH_CLIENT_ID = "8c6Bna.YrZM1M8GC";
-  const DAUTH_REDIRECT_URI = "http://localhost:5173/signin";
+  const DAUTH_REDIRECT_URI = `${FRONTEND}/signin`;
   const DAUTH_SCOPE = "email openid profile user";
   const DAUTH_AUTH_URL = "https://auth.delta.nitt.edu/authorize";
 

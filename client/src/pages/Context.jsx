@@ -1,11 +1,12 @@
 import React, { createContext, useState, useEffect } from "react";
+import { BACKEND } from "../config/env";
 export const context = createContext();
 
 const Context = (props) => {
   const [loggedin, setLoggedin] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const serverUrl = "http://localhost:5000";
+  const serverUrl = BACKEND;
 
   useEffect(() => {
     const token = localStorage.getItem("token");

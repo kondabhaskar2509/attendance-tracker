@@ -34,7 +34,7 @@ const TABLES = {
         id serial primary key,
         name text not null,
         email text unique not null,
-        created_at timestamptz default now() 
+        created_at timestamptz default now()
     );`,
   subjects: `create table if not exists subjects (
         id serial primary key,
@@ -130,7 +130,7 @@ async function createTables() {
             client_secret: process.env.CLIENT_SECRET,
             grant_type: "authorization_code",
             code: code,
-            redirect_uri: "http://localhost:5173/signin",
+            redirect_uri: `${process.env.FRONTEND}/signin`,
           }),
         }
       );
