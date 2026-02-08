@@ -37,7 +37,7 @@ const DAuthCallback = () => {
         <h2 className="text-xl font-extrabold mb-4 text-black text-center">
           DAuth login successful.
           <br />
-          Redirecting to NF Forms...
+          Redirecting to your app...
         </h2>
       </div>
     </div>
