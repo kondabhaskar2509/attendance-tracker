@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => {
     define: {
       'process.env.FRONTEND': JSON.stringify(env.FRONTEND),
       'process.env.BACKEND': JSON.stringify(env.BACKEND),
+      'process.env.CLIENT_ID': JSON.stringify(env.CLIENT_ID),
     },
   }
 })
