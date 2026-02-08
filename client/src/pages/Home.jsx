@@ -11,7 +11,7 @@ const Home = () => {
   const [subjectname, setSubjectname] = useState("");
   const { loggedin, email, serverUrl } = useContext(context);
 
-  const DAUTH_CLIENT_ID = "8c6Bna.YrZM1M8GC";
+  const DAUTH_CLIENT_ID = process.env.DAUTH_CLIENT_ID;
   const DAUTH_REDIRECT_URI = `${process.env.FRONTEND}/signin`;
   const DAUTH_SCOPE = "email openid profile user";
   const DAUTH_AUTH_URL = "https://auth.delta.nitt.edu/authorize";
