@@ -4,6 +4,7 @@ export const context = createContext();
 const Context = (props) => {
   const [loggedin, setLoggedin] = useState(false);
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const isNetlify =
     typeof window !== "undefined" &&
     window.location.origin.includes("netlify.app");
