@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { context } from "./Context";
 
@@ -6,16 +6,31 @@ const DAuthCallback = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { setEmail, setName, setLoggedin, serverUrl } = useContext(context);
+  const hasFetched = useRef(false);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const code = queryParams.get("code");
 
-    if (code) {
+    if (code && !hasFetched.current) {
+      hasFetched.current = true;
+      const isNetlify =
+        typeof window !== "undefined" &&
+        window.location.origin.includes("netlify.app");
+      const redirectUri = isNetlify
+        ? "https://attendance-app-in.netlify.app/signin"
+        : process.env.REDIRECT_URI ||
+          `${(
+            process.env.FRONTEND ||
+            (typeof window !== "undefined"
+              ? window.location.origin
+              : "http://localhost:5173")
+          ).replace(/\/+$/, "")}/signin`;
+
       fetch(`${serverUrl}/signin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code, redirect_uri: redirectUri }),
       })
         .then((res) => res.json())
         .then((data) => {
@@ -25,10 +40,19 @@ const DAuthCallback = () => {
             setName(data.user.name);
             setEmail(data.user.email);
             navigate("/");
+          } else {
+            console.error("Sign in failed:", data.error);
+            alert("Sign in failed: " + (data.error || "Unknown error"));
+            navigate("/");
           }
+        })
+        .catch((err) => {
+          console.error("Error signing in:", err);
+          alert("Sign in error: " + err.message);
+          navigate("/");
         });
     }
-  }, [location.search, navigate]);
+  }, [location.search, navigate, serverUrl, setEmail, setName, setLoggedin]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#10182b]">

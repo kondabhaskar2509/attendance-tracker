@@ -11,8 +11,19 @@ const Home = () => {
   const [subjectname, setSubjectname] = useState("");
   const { loggedin, email, serverUrl } = useContext(context);
 
-  const DAUTH_CLIENT_ID = process.env.CLIENT_ID;
-  const DAUTH_REDIRECT_URI = `${process.env.FRONTEND}/signin`;
+  const isNetlify =
+    typeof window !== "undefined" &&
+    window.location.origin.includes("netlify.app");
+  const DAUTH_CLIENT_ID = isNetlify
+    ? "b0yVVrMLV8PnH-z0"
+    : process.env.CLIENT_ID || "b0yVVrMLV8PnH-z0";
+  const DAUTH_REDIRECT_URI = isNetlify
+    ? "https://attendance-app-in.netlify.app/signin"
+    : process.env.REDIRECT_URI ||
+      `${(process.env.FRONTEND || (typeof window !== "undefined" ? window.location.origin : "http://localhost:5173")).replace(
+        /\/+$/,
+        ""
+      )}/signin`;
   const DAUTH_SCOPE = "email openid profile user";
   const DAUTH_AUTH_URL = "https://auth.delta.nitt.edu/authorize";
 

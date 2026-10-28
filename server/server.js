@@ -8,11 +8,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -119,7 +119,27 @@ async function createTables() {
 
   app.post("/signin", async (req, res) => {
     try {
-      const { code } = req.body;
+      const { code, redirect_uri } = req.body;
+
+      if (!code) {
+        return res
+          .status(400)
+          .json({ status: "error", error: "Authorization code is required" });
+      }
+
+      const redirectUri = (
+        redirect_uri ||
+        process.env.REDIRECT_URI ||
+        `${(process.env.FRONTEND || "https://attendance-app-in.netlify.app").replace(
+          /\/+$/,
+          ""
+        )}/signin`
+      )
+        .trim()
+        .replace(/\/+$/, "");
+
+      console.log(`Exchanging code for token with redirect_uri: ${redirectUri}`);
+
       const tokenresponse = await fetch(
         "https://auth.delta.nitt.edu/api/oauth/token",
         {
@@ -130,11 +150,22 @@ async function createTables() {
             client_secret: process.env.CLIENT_SECRET,
             grant_type: "authorization_code",
             code: code,
-            redirect_uri: `${process.env.FRONTEND}/signin`,
+            redirect_uri: redirectUri,
           }),
         }
       );
       const tokendata = await tokenresponse.json();
+
+      if (!tokendata.access_token) {
+        console.error("DAuth token exchange failed:", tokendata);
+        return res.status(400).json({
+          status: "error",
+          error:
+            tokendata.error_description ||
+            tokendata.error ||
+            "Failed to exchange authorization code with DAuth",
+        });
+      }
 
       const userresponse = await fetch(
         "https://auth.delta.nitt.edu/api/resources/user",
@@ -152,9 +183,9 @@ async function createTables() {
           .from("login")
           .insert([{ name: userdata.name, email: userdata.email }]);
 
-          if (error && error.code !== "23505") {
-            console.error("Error inserting user data:", error);
-          }
+        if (error && error.code !== "23505") {
+          console.error("Error inserting user data:", error);
+        }
 
         const token = jwt.sign(
           { name: userdata.name, email: userdata.email },
@@ -167,11 +198,17 @@ async function createTables() {
           user: { name: userdata.name, email: userdata.email },
         });
       } else {
-        return res
-          .status(400)
-          .json({ status: "error", error: "Invalid user data from DAuth" });
+        console.error("DAuth user fetch failed:", userdata);
+        return res.status(400).json({
+          status: "error",
+          error:
+            userdata?.error_description ||
+            userdata?.error ||
+            "Invalid user data from DAuth",
+        });
       }
     } catch (e) {
+      console.error("Server signin error:", e);
       res.status(500).json({ status: "error", error: e.message });
     }
   });

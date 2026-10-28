@@ -4,8 +4,14 @@ export const context = createContext();
 const Context = (props) => {
   const [loggedin, setLoggedin] = useState(false);
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const serverUrl = process.env.BACKEND;
+  const isNetlify =
+    typeof window !== "undefined" &&
+    window.location.origin.includes("netlify.app");
+  const serverUrl = (
+    isNetlify
+      ? "https://attendance-tracker-43ng.onrender.com"
+      : process.env.BACKEND || "http://localhost:5000"
+  ).replace(/\/+$/, "");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
